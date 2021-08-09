@@ -12,12 +12,12 @@ function GetCraftTime(player)
     
     for i, qItem in ipairs(queue) do
         local recipe = game.recipe_prototypes[qItem.recipe]
-        local qItemCraftTime = recipe.energy * qItem.count / (1.0 + player.force.manual_crafting_speed_modifier)
+        local qItemCraftTime = recipe.energy * qItem.count / (1.0 + player.force.manual_crafting_speed_modifier + player.character_crafting_speed_modifier)
         craftTime = craftTime + qItemCraftTime
 
         -- Reduce the crafting time using the progress on the current item being crafted
         if i == 1 then
-            craftTime = craftTime - ((recipe.energy / (1.0 + player.force.manual_crafting_speed_modifier)) * player.crafting_queue_progress)
+            craftTime = craftTime - ((recipe.energy / (1.0 + player.force.manual_crafting_speed_modifier + player.character_crafting_speed_modifier)) * player.crafting_queue_progress)
         end
         
     end
