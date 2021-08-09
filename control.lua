@@ -1,5 +1,4 @@
-player_time_text = 0
-first_tick = true
+player_time_text = nil
 
 function GetCraftTime(player)
     local queue = player.crafting_queue
@@ -34,8 +33,7 @@ end
 
 function PrintCraftTime()
 
-    if first_tick then
-        first_tick = false
+    if not player_time_text then
         SetupText()
     end
     
