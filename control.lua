@@ -1,4 +1,4 @@
-player_time_text = nil
+player_time_text = player_time_text or nil
 
 function GetCraftTime(player)
     local queue = player.crafting_queue
@@ -25,6 +25,10 @@ function GetCraftTime(player)
 end
 
 function SetupText()
+    if player_time_text ~= nil then
+        return
+    end
+    
     local player = game.get_player(1)
     local col = {r = 1.0, g = 1.0, b = 1.0, a = 1.0}
 
@@ -33,7 +37,7 @@ end
 
 function PrintCraftTime()
 
-    if not player_time_text then
+    if player_time_text == nil then
         SetupText()
     end
     
