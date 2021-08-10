@@ -1,5 +1,19 @@
 player_time_text = player_time_text or nil
 
+-- Because of my supreme laziness this is a modified version of: https://stackoverflow.com/a/45376848
+function FormatTime(time)
+    local days = math.floor(time/86400)
+    local hours = math.floor(math.fmod(time, 86400)/3600)
+    local minutes = math.floor(math.fmod(time,3600)/60)
+    local seconds = math.floor(math.fmod(time,60))
+
+    local printDays = days > 0
+    local printHours = hours > 0 or printDays
+    local printMinutes = minutes > 0 or printHours
+
+    return "" .. (printDays and (days .. " ") or "") .. (printHours and (hours .. ":") or "") .. (printMinutes and (minutes .. ":") or "") .. seconds .. "s"
+end
+
 function GetCraftTime(player)
     local queue = player.crafting_queue
 
@@ -56,7 +70,8 @@ function PrintCraftTime()
         rendering.set_visible(player_time_text, time > 0.1)
     end
 
-    rendering.set_text(player_time_text, "" .. string.format("%.1f", time) .. "s")
+    -- rendering.set_text(player_time_text, "" .. string.format("%.1f", time) .. "s")
+    rendering.set_text(player_time_text, FormatTime(time))
     -- end
 
     -- game.players[1].print("Time: " .. GetCraftTime(e.player_index) .. "s")
