@@ -1,3 +1,5 @@
+local mod_gui = require("mod-gui")
+
 -- Because of my supreme laziness this is a modified version of: https://stackoverflow.com/a/45376848
 function FormatTime(time)
     local days = math.floor(time/86400)
@@ -36,39 +38,29 @@ function GetCraftTime(player)
     return craftTime;
 end
 
-function SetupText(player)
-    if (not player) or (not player.character) then
-        return false
+function RemoveOldEl(player)
+    if global.player_time_text and global.player_time_text[player.index] then
+        rendering.destroy(global.player_time_text[player.index])
+        global.player_time_text[player.index] = nil
     end
-    if global.player_time_text[player.index] == nil then
-        global.player_time_text[player.index] = rendering.draw_text({text = "", surface = "nauvis", target = player.character, color = {r = 1.0, g = 1.0, b = 1.0, a = 1.0}})
-    end
-    return true
 end
 
 function PrintCraftTime()
-    global.player_time_text = global.player_time_text or {}
+    local elName = "craft_time"
 
     -- Go back to using the for loop to make this multiplayer compatible
     for i, player in ipairs(game.connected_players) do
-
+        
         if player and player.character then
-            -- If the player's text has not been setup yet (somehow), ensure that we do
-            if global.player_time_text[player.index] == nil then
-                SetupText(player)
-            end
-
-            -- It is somehow possible for a player's time text to not exist, it may seem
-            if global.player_time_text[player.index] then
+            RemoveOldEl(player)
+            local superUI = player.gui.left -- Makes it easy to change which ui we want to add the element to
+            local ui = superUI[elName] or superUI.add{type = "frame", name = elName, caption = "", direction = "horizontal", style = mod_gui.frame_style}
+            
+            if ui then
+                ui.style.bottom_padding = 4
                 local time = GetCraftTime(player)
-
-                -- Only update visibility if it has changed
-                if (time > 0.1) ~= rendering.get_visible(global.player_time_text[player.index]) then
-                    rendering.set_visible(global.player_time_text[player.index], time > 0.1)
-                end
-
-                -- rendering.set_text(player_time_text, "" .. string.format("%.1f", time) .. "s")
-                rendering.set_text(global.player_time_text[player.index], FormatTime(time))
+                ui.caption = ((time > 0.1) and ("Crafting Time: " .. FormatTime(time)) or "")
+                ui.visible = time > 0.1
             end
         end
     end
@@ -76,7 +68,4 @@ function PrintCraftTime()
     -- game.players[1].print("Time: " .. GetCraftTime(e.player_index) .. "s")
 end
 
-script.on_load(OnLoad)
 script.on_event(defines.events.on_tick, PrintCraftTime)
--- script.on_event(defines.events.on_player_joined_game, PlayerJoined)
--- script.on_event(defines.events.on_player_left_game, PlayerLeft)
