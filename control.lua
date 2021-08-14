@@ -1,11 +1,13 @@
 local mod_gui = require("mod-gui")
 
+global.playerCraftTime = global.playerCraftTime or {}
+
 -- Because of my supreme laziness this is a modified version of: https://stackoverflow.com/a/45376848
 function FormatTime(time)
     local days = math.floor(time/86400)
     local hours = math.floor(math.fmod(time, 86400)/3600)
-    local minutes = math.floor(math.fmod(time,3600)/60)
-    local seconds = math.floor(math.fmod(time,60))
+    local minutes = math.floor(math.fmod(time, 3600)/60)
+    local seconds = math.floor(math.fmod(time, 60))
 
     local printDays = days > 0
     local printHours = hours > 0 or printDays
@@ -38,6 +40,25 @@ function GetCraftTime(player)
     return craftTime;
 end
 
+-- This will get a player's craft time and assign it to them
+function SetPlayerCraftTime(player)
+    global.playerCraftTime[player.index] = GetCraftTime(player)
+end
+
+function GetPlayerCraftTime(player)
+    local cT = global.playerCraftTime[player.index] or 0.0
+    if cT < 0.0 then cT = 0.0 end
+    return cT
+end
+
+-- Reduce player craft time each frame
+function DecrementPlayerCraftTime(player)
+    local cT = GetPlayerCraftTime(player)
+    if cT > 0.0 then
+        global.playerCraftTime[player.index] = cT - (1.0 / 60.0) -- TODO: Test this during poor UPS
+    end
+end
+
 function RemoveOldEl(player)
     if global.player_time_text and global.player_time_text[player.index] then
         rendering.destroy(global.player_time_text[player.index])
@@ -46,6 +67,7 @@ function RemoveOldEl(player)
 end
 
 function PrintCraftTime()
+    global.playerCraftTime = global.playerCraftTime or {}
     local elName = "craft_time"
 
     -- Go back to using the for loop to make this multiplayer compatible
@@ -58,14 +80,28 @@ function PrintCraftTime()
             
             if ui then
                 ui.style.bottom_padding = 4
-                local time = GetCraftTime(player)
+                local time = GetPlayerCraftTime(player)
+                DecrementPlayerCraftTime(player)
                 ui.caption = ((time > 0.1) and ("Crafting Time: " .. FormatTime(time)) or "")
                 ui.visible = time > 0.1
             end
         end
     end
+end
 
-    -- game.players[1].print("Time: " .. GetCraftTime(e.player_index) .. "s")
+function PlayerCancelledCrafting(e)
+    SetPlayerCraftTime(game.get_player(e.player_index))
+end
+
+function PlayerAddItemToQueue(e)
+    SetPlayerCraftTime(game.get_player(e.player_index))
+end
+
+function PlayerJoinedGame(e)
+    SetPlayerCraftTime(game.get_player(e.player_index))
 end
 
 script.on_event(defines.events.on_tick, PrintCraftTime)
+script.on_event(defines.events.on_player_cancelled_crafting, PlayerCancelledCrafting)
+script.on_event(defines.events.on_pre_player_crafted_item, PlayerAddItemToQueue)
+script.on_event(defines.events.on_player_joined_game, PlayerJoinedGame)
