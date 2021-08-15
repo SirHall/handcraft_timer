@@ -42,6 +42,7 @@ end
 
 -- This will get a player's craft time and assign it to them
 function SetPlayerCraftTime(player)
+    global.playerCraftTime = global.playerCraftTime or {}
     global.playerCraftTime[player.index] = GetCraftTime(player)
 end
 
