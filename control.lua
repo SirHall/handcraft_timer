@@ -17,6 +17,10 @@ function FormatTime(time)
 end
 
 function GetCraftTime(player)
+    if player.character == nil then
+        return 0.0
+    end
+    
     local queue = player.crafting_queue
 
     if not queue then
