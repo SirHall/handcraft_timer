@@ -13,7 +13,8 @@ function FormatTime(time)
     local printHours = hours > 0 or printDays
     local printMinutes = minutes > 0 or printHours
 
-    return "" .. (printDays and (days .. "d ") or "") .. (printHours and (hours .. "h ") or "") .. (printMinutes and (string.format("%02d", minutes) .. "m ") or "") .. seconds .. "s"
+    local ret = "" .. (printDays and string.format('%02d', days) .. "d " or "") .. (printHours and string.format('%02d', hours) .. "h " or "") .. (printMinutes and string.format('%02d', minutes) .. "m " or "") .. (string.format('%02d', seconds) .. "s" or "")
+    return ret
 end
 
 function GetCraftTime(player)
